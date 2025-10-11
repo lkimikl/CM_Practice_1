@@ -39,7 +39,7 @@ class VFSEmulator:
             print(f"Ошибка настройки логирования: {e}")
 
     def log_command(self, command, args, error_message=None):
-        """Логирование команды"""
+        #Логирование команды
         if self.log_file:
             message = f"COMMAND:{command},ARGS:{args},ERROR:{error_message or 'None'}"
             logging.info(message)
