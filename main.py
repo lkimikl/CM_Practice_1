@@ -15,7 +15,7 @@ class VFSEmulator:
         self.log_file = log_file
         self.startup_script = startup_script
 
-        #Настройка логирования
+        # Настройка логирования
         if self.log_file:
             self.setup_logging()
 
@@ -23,11 +23,10 @@ class VFSEmulator:
             'ls': self.cmd_ls,
             'cd': self.cmd_cd,
             'exit': self.cmd_exit,
-            'pwd': self.cmd_pwd
         }
 
     def setup_logging(self):
-        #Настройка логирования
+        # Настройка логирования
         try:
             logging.basicConfig(
                 filename=self.log_file,
@@ -39,18 +38,18 @@ class VFSEmulator:
             print(f"Ошибка настройки логирования: {e}")
 
     def log_command(self, command, args, error_message=None):
-        #Логирование команды
+        # Логирование команды
         if self.log_file:
             message = f"COMMAND:{command},ARGS:{args},ERROR:{error_message or 'None'}"
             logging.info(message)
 
     def parse_arguments(self, input_string):
-        #Парсер аргументов
-        #Выражение для разбора аргументов в кавычках
+        # Парсер аргументов
+        # Выражение для разбора аргументов в кавычках
         pattern = r'''(".*?"|'.*?'|\S+)'''
         matches = re.findall(pattern, input_string)
 
-        #Убираем кавычки вокруг аргументов
+        # Убираем кавычки вокруг аргументов
         parsed_args = []
         for match in matches:
             if (match.startswith('"') and match.endswith('"')) or \
@@ -62,13 +61,13 @@ class VFSEmulator:
         return parsed_args
 
     def cmd_ls(self, args):
-        #Проверка количества аргументов
+        # Проверка количества аргументов
         if len(args) > 1:
             error_msg = "ls: too many arguments"
             self.log_command('ls', args, error_msg)
             return f"Error: {error_msg}"
 
-        #Проверка что внутри кавычек не несколько аргументов
+        # Проверка что внутри кавычек не несколько аргументов
         if len(args) == 1 and ' ' in args[0]:
             # Если в кавычках передано несколько "аргументов" через пробелы
             error_msg = "ls: too many arguments"
@@ -80,58 +79,39 @@ class VFSEmulator:
         return result
 
     def cmd_cd(self, args):
-        #Проверка количества аргументов
+        # Проверка количества аргументов
         if len(args) > 1:
             error_msg = "cd: too many arguments"
             self.log_command('cd', args, error_msg)
             return f"Error: {error_msg}"
 
+        # Проверка что внутри кавычек не несколько аргументов
+        if len(args) == 1 and ' ' in args[0]:
+            # Если в кавычках передано несколько "аргументов" через пробелы
+            error_msg = "cd: too many arguments"
+            self.log_command('cd', args, error_msg)
+            return f"Error: {error_msg}"
+
         if len(args) == 0:
-            self.current_dir = self.vfs_path
-            result = f"Changed directory to: {self.current_dir}"
+            result = "cd: missing argument"
+            self.log_command('cd', args, result)
+            return f"Error: {result}"
         else:
-            new_dir = args[0]
-            #Эмуляция смены директории
-            if new_dir.startswith('/'):
-                self.current_dir = new_dir
-            else:
-                if self.current_dir.endswith('/'):
-                    self.current_dir = self.current_dir + new_dir
-                else:
-                    self.current_dir = self.current_dir + '/' + new_dir
-            result = f"Changed directory to: {self.current_dir}"
+            result = f"cd command called with arguments: {args}"
 
         self.log_command('cd', args)
         return result
 
-    def cmd_pwd(self, args):
-        #Команда pwd
-        #Проверка количества аргументов
-        if len(args) > 0:
-            error_msg = "pwd: too many arguments"
-            self.log_command('pwd', args, error_msg)
-            return f"Error: {error_msg}"
-
-        #Проверка что внутри кавычек не несколько аргументов
-        if len(args) == 1 and ' ' in args[0]:
-            #Если в кавычках передано несколько "аргументов" через пробелы
-            error_msg = "pwd: too many arguments"
-            self.log_command('pwd', args, error_msg)
-            return f"Error: {error_msg}"
-
-        result = self.current_dir
-        self.log_command('pwd', args)
-        return result
 
     def cmd_exit(self, args):
-        #Команда exit
-        #Проверка количества аргументов
+        # Команда exit
+        # Проверка количества аргументов
         if len(args) > 0:
             error_msg = "exit: too many arguments"
             self.log_command('exit', args, error_msg)
             return f"Error: {error_msg}"
 
-        #Проверка что внутри кавычек не несколько аргументов
+        # Проверка что внутри кавычек не несколько аргументов
         if len(args) == 1 and ' ' in args[0]:
             # Если в кавычках передано несколько "аргументов" через пробелы
             error_msg = "exit: too many arguments"
@@ -142,12 +122,12 @@ class VFSEmulator:
         return "EXIT"
 
     def execute_command(self, command_input):
-        #Выполнени команды
+        # Выполнени команды
         if not command_input.strip():
             return ""
 
         try:
-            #Разбираем команду и аргументы
+            # Разбираем команду и аргументы
             parts = self.parse_arguments(command_input)
             if not parts:
                 return ""
@@ -155,7 +135,7 @@ class VFSEmulator:
             command = parts[0]
             args = parts[1:]
 
-            #Выполняем команду
+            # Выполняем команду
             if command in self.commands:
                 result = self.commands[command](args)
                 if result == "EXIT":
@@ -176,12 +156,12 @@ class VFSGUI:
     def __init__(self, vfs_emulator):
         self.vfs = vfs_emulator
 
-        #Создаем главное окно
+        # Создаем главное окно
         self.root = tk.Tk()
         self.root.title(f"VFS Emulator - {self.vfs.vfs_path}")
         self.root.geometry("800x600")
 
-        #Создаем текстовое поле для вывода
+        # Создаем текстовое поле для вывода
         self.output_text = scrolledtext.ScrolledText(
             self.root,
             wrap=tk.WORD,
@@ -192,7 +172,7 @@ class VFSGUI:
         self.output_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.output_text.config(state=tk.DISABLED)
 
-        #Создаем поле ввода
+        # Создаем поле ввода
         input_frame = tk.Frame(self.root)
         input_frame.pack(fill=tk.X, padx=5, pady=5)
 
@@ -204,20 +184,20 @@ class VFSGUI:
         self.input_entry.bind('<Return>', self.execute_command)
         self.input_entry.focus()
 
-        #Кнопка выполнения
+        # Кнопка выполнения
         self.execute_button = tk.Button(input_frame, text="Execute", command=self.execute_command)
         self.execute_button.pack(side=tk.RIGHT, padx=(5, 0))
 
-        #Приветственное сообщение
+        # Приветственное сообщение
         self.print_output("VFS Emulator v1.0")
         self.print_output("Type 'exit' to quit\n")
 
-        #Если указан стартовый скрипт, выполняем его
+        # Если указан стартовый скрипт, выполняем его
         if self.vfs.startup_script:
             self.root.after(100, self.execute_startup_script)
 
     def execute_startup_script(self):
-        #Выполнение стартового скрипта
+        # Выполнение стартового скрипта
         try:
             with open(self.vfs.startup_script, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
@@ -226,7 +206,7 @@ class VFSGUI:
 
             for line_num, line in enumerate(lines, 1):
                 line = line.strip()
-                #Пропускаем пустые строки и комментарии
+                # Пропускаем пустые строки и комментарии
                 if line and not line.startswith('#'):
                     self.print_output(f"{self.vfs.current_dir}$ {line}")
                     result = self.vfs.execute_command(line)
@@ -234,7 +214,7 @@ class VFSGUI:
                     if result and result != "EXIT":
                         self.print_output(result)
 
-                    #Проверяем на ошибки
+                    # Проверяем на ошибки
                     if result and result.startswith("Error:"):
                         self.print_output(f"Script stopped at line {line_num} due to error")
                         break
@@ -248,31 +228,31 @@ class VFSGUI:
             messagebox.showerror("Script Error", error_msg)
 
     def update_prompt(self):
-        #Обновление приглашения командной строки
+        # Обновление приглашения командной строки
         self.prompt_label.config(text=f"{self.vfs.current_dir}$ ")
 
     def print_output(self, text):
-        #Вывод текста в текстовое поле
+        # Вывод текста в текстовое поле
         self.output_text.config(state=tk.NORMAL)
         self.output_text.insert(tk.END, text + '\n')
         self.output_text.see(tk.END)
         self.output_text.config(state=tk.DISABLED)
 
     def execute_command(self, event=None):
-        #Выполнение команды из поля ввода
+        # Выполнение команды из поля ввода
         command = self.input_entry.get().strip()
         self.input_entry.delete(0, tk.END)
 
         if not command:
             return
 
-        #Выводим команду
+        # Выводим команду
         self.print_output(f"{self.vfs.current_dir}$ {command}")
 
-        #Выполняем команду
+        # Выполняем команду
         result = self.vfs.execute_command(command)
 
-        #Обрабатываем результат
+        # Обрабатываем результат
         if result and result != "EXIT":
             self.print_output(result)
 
@@ -280,16 +260,16 @@ class VFSGUI:
             self.root.quit()
             return
 
-        #Обновляем приглашение
+        # Обновляем приглашение
         self.update_prompt()
 
     def run(self):
-        #Запуск GUI
+        # Запуск GUI
         self.root.mainloop()
 
 
 def main():
-    #Парсинг аргументов командной строки
+    # Парсинг аргументов командной строки
     parser = argparse.ArgumentParser(description='VFS Emulator')
     parser.add_argument('--vfs-path', type=str, default='/virtual/root',
                         help='Path to VFS physical location')
@@ -300,20 +280,20 @@ def main():
 
     args = parser.parse_args()
 
-    #Отладочный вывод параметров
+    # Отладочный вывод параметров
     print("VFS Emulator starting with parameters:")
     print(f"  VFS Path: {args.vfs_path}")
     print(f"  Log File: {args.log_file}")
     print(f"  Startup Script: {args.startup_script}")
 
-    #Создаем эмулятор VFS
+    # Создаем эмулятор VFS
     vfs = VFSEmulator(
         vfs_path=args.vfs_path,
         log_file=args.log_file,
         startup_script=args.startup_script
     )
 
-    #Запускаем GUI
+    # Запускаем GUI
     gui = VFSGUI(vfs)
     gui.run()
 
