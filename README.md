@@ -7,7 +7,7 @@
 - Графический интерфейс (GUI) с заголовком VFS
 - Парсер команд с поддержкой аргументов в кавычках
 - Виртуальная файловая система в памяти
-- Команды: ls, cd, du, history, cal, touch, mkdir, vfs-load, vfs-save, vfs-info, help, exit
+- Команды: ls, cd, du, history, cal, touch, mkdir, vfs-load, vfs-info, help, exit
 - Логирование в CSV формате
 - Выполнение стартовых скриптов
 - Обработка ошибок выполнения
