@@ -1,0 +1,4 @@
+ls /
+mkdir /test
+mkdir /test
+ls /nonexistent

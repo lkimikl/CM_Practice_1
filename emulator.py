@@ -103,17 +103,21 @@ class VFS:
     @classmethod
     def load_from_zip(cls, zip_path, vfs_name=None):
         vfs = cls(vfs_name or os.path.basename(zip_path))
+
         with zipfile.ZipFile(zip_path, 'r') as zf:
-            for info in zf.infolist():
-                parts = info.filename.split("/")
-                dir_path = "/".join(parts[:-1])
-                file_name = parts[-1]
-                parent = vfs.find_node(dir_path) if dir_path else vfs.root
-                if parent and parent.is_dir:
-                    content = base64.b64decode(zf.read(info.filename))
-                    new_node = VFSNode(file_name, is_dir=False, content=content)
-                    new_node.parent = parent
-                    parent.children[file_name] = new_node
+            for filename in zf.namelist():
+                if filename.endswith('/'):
+                    continue  # пропускаем директории
+
+                # Простая логика: все файлы в корень VFS
+                file_name = os.path.basename(filename)
+                try:
+                    content = base64.b64decode(zf.read(filename))
+                except:
+                    content = zf.read(filename)  # fallback
+
+                vfs.touch(file_name, content)
+
         return vfs
 
     def create_default(self):
@@ -189,8 +193,13 @@ class ShellEmulator:
         parts = self.parse_line(line)
         if not parts:
             return
+
         cmd = parts[0]
         args = parts[1:]
+
+        # ДОБАВЛЯЕМ КОМАНДУ В ИСТОРИЮ ПЕРЕД ВЫПОЛНЕНИЕМ
+        self.history.append(line)
+
         self.log_command(cmd, args)
         if cmd in self.commands:
             try:
@@ -267,8 +276,16 @@ class ShellEmulator:
             self.print_output(f"{size_node(node)} байт")
 
     def cmd_history(self, args):
-        for i, cmd in enumerate(self.history[-10:], 1):
+        if not self.history:
+            self.print_output("История команд пуста")
+            return
+
+        self.print_output("=== История команд ===")
+        # Показываем последние 10 команд или меньше, если их меньше
+        start_index = max(0, len(self.history) - 10)
+        for i, cmd in enumerate(self.history[start_index:], start_index + 1):
             self.print_output(f"{i}: {cmd}")
+        self.print_output("=====================")
 
     def cmd_cal(self, args):
         import calendar

@@ -1,0 +1,23 @@
+# Этап 1-4: Базовые команды
+ls /
+cd /dir1
+ls
+cd /
+du /
+history
+cal
+
+# Этап 5: Модификация
+mkdir /student
+mkdir /student/lab5
+touch /student/readme.txt
+touch /student/lab5/task.py
+ls /student
+ls /student/lab5
+
+# Этап 3: VFS команды
+vfs-info
+
+# Этап 2: Проверка ошибок
+mkdir /student
+# Скрипт должен остановиться здесь
