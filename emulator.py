@@ -147,7 +147,6 @@ class ShellEmulator:
             'touch': self.cmd_touch,
             'mkdir': self.cmd_mkdir,
             'vfs-load': self.cmd_vfs_load,
-            'vfs-save': self.cmd_vfs_save,
             'vfs-info': self.cmd_vfs_info,
             'help': self.cmd_help,
         }
@@ -329,16 +328,6 @@ class ShellEmulator:
         except:
             self.print_output("Ошибка загрузки VFS")
 
-    def cmd_vfs_save(self, args):
-        if not args:
-            self.print_output("vfs-save: требуется путь")
-            return
-        try:
-            self.vfs.save_to_zip(args[0])
-            self.print_output(f"VFS сохранена в {args[0]}")
-        except:
-            self.print_output("Ошибка сохранения VFS")
-
     def cmd_vfs_info(self, args):
         self.print_output(f"Имя VFS: {self.vfs.name}")
 
@@ -352,7 +341,6 @@ class ShellEmulator:
         touch <файл>       - создать файл
         mkdir <каталог>    - создать каталог
         vfs-load <путь>    - загрузить VFS
-        vfs-save <путь>    - сохранить VFS
         vfs-info           - информация о VFS
         help               - справка
         exit               - выход

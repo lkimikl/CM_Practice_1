@@ -1,4 +1,4 @@
-# create_demo_vfs.py (упрощенная версия для ТЗ)
+# create_demo_vfs.py
 import zipfile
 import base64
 
